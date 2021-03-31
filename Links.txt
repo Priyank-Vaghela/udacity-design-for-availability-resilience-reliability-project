@@ -1,0 +1,2 @@
+S3 Bucket - Static Site
+http://udacity-static-site-bucket-testing.s3-website-us-east-1.amazonaws.com/

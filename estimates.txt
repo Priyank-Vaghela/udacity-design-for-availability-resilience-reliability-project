@@ -1,0 +1,56 @@
+1) Minimum RTO for a single AZ outage
+Here, the RTO is time to complete switching to a different Availability Zone.
+Time: 60-120 seconds
+
+Docs: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html
+
+"In the event of a planned or unplanned outage of your DB instance, Amazon RDS automatically
+switches to a standby replica in another Availability Zone if you have enabled Multi-AZ.
+The time it takes for the failover to complete depends on the database activity and other
+conditions at the time the primary DB instance became unavailable. Failover times are typically
+60–120 seconds. However, large transactions or a lengthy recovery process can increase failover
+time. When the failover is complete, it can take additional time for the RDS console to reflect
+the new Availability Zone."
+
+2) Minimum RTO for a single region outage
+Here, the RTO times requires starting a new RDS instance and then applying all configuration changes as per the last backup.
+Time - 30 mins to 1 hour
+
+Manual things to-do:
+Step 1 - Configure  existing replica and then promote it to a master
+Step 2 - Reconfigure an application to point to new RDS instance
+
+3) Minimum RPO for a single AZ outage
+Here, we will have a data loss of minimum as the secondary instance stores the data, thus the RPO is 0.
+
+4) Minimum RPO for a single region outage
+
+Here, the data loss will be related to the frequency of the data transfer from master to other replicas across regions.
+Also, it is dependent on the frequency of backups and the speed to restore it.
+The Amazon RDS takes a transaction logs backup for every 5 minutes.
+
+Docs: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIT.html
+
+"RDS uploads transaction logs for DB instances to Amazon S3 every 5 minutes.
+To determine the latest restorable time for a DB instance, use the AWS CLI describe-db-instances
+command and look at the value returned in the LatestRestorableTime field for the DB instance.
+In the AWS Management Console, this property is visible as the Latest restore time for the
+DB instance. You can restore to any point in time during your backup retention period."
+
+Docs: https://aws.amazon.com/blogs/database/amazon-rds-under-the-hood-single-az-instance-recovery/
+
+"The RTO timing requires starting up a new Amazon RDS instance and then applying all changes
+since the last backup. The RPO is typically 5 minutes, but you can find it by calling
+RDS:describe-db-instances:LatestRestorableTime. This time can vary from 10 minutes to hours,
+depending on the number of logs that need to be applied. It can only be determined by testing
+because it depends on the size of the database, the number of changes made since the last
+backup, and the workload levels on the database."
+
+There is also application configuration change time to point to a new instance. This depends on
+application architecture. At the minimum - one config change. There is also an option to not to
+change the config but rename restored instance using older name:
+
+https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_RenameInstance.html
+
+Also, this process need deleting old instance, so it may not work for application.
+Total time: 10-30 mins approx restore time and around 10 mins for reconfiguration
